@@ -4,14 +4,49 @@ from PySide6.QtCore import Qt
 
 
 class VigenereCipher:
+    """Representa cifrador de Vigenere
+
+    Attributes:
+        alphabet (list): [Alfabeto disponible para cifrar]
+        plain_text (str): [Texto de entrada que se desea cifrar]
+        key (str): [Clave del cifrado]
+        cipher_text (str): [Salida de texto cifrado]
+        blocks (list): [Bloques del mensaje según la clave]
+    """
     def __init__(self, plain_text, key):
+        """Inicializa un objeto de tipo VigenereCipher
+
+        Args:
+            plain_text (str) : [Texto de entrada que se desea cifrar]
+            key (str) : [Clave del cifrado]
+        """
+        self._alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+                          'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+                          'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
         self._plain_text = plain_text
         self._key = key
         self._cipher_text = ''
         self.blocks = []
         self.define_blocks()
 
+    def find_index(self, character):
+        """Retorna el indice donde se encuentra un caracter en el alfabeto
+
+        Args:
+            character (str)
+
+        Returns:
+            int
+        """
+        index = 0
+        for c in self._alphabet:
+            if c == character:
+                return index
+            index += 1
+        return -1
+
     def define_blocks(self):
+        """Separa el mensaje inicial en bloques egún la clave dada"""
         index = 0
         aux = ''
         for i in self._plain_text.replace(' ', ''):
@@ -25,15 +60,20 @@ class VigenereCipher:
             self.blocks.append(aux)
 
     def encrypt(self):
+        """Encripta en mensaje usando el cifrado de Vigenere
+
+        Returns:
+            list
+        """
         bloques_cifrados = []
         aux = ''
-        for bloque in self.blocks:
+        for block in self.blocks:
             index = 0
-            for caracter in bloque:
-                car = (ord(caracter) - 65) + (ord(self._key[index]) - 65)
+            for character in block:
+                car = (self.find_index(character) + self.find_index(self._key[index]))
                 if car >= 26:
                     car = car % 26
-                aux += chr(car + 65)
+                aux += self._alphabet[car]
                 index += 1
             bloques_cifrados.append(aux)
             aux = ''
@@ -41,15 +81,20 @@ class VigenereCipher:
         return [self.blocks, bloques_cifrados]
 
     def decrypt(self):
+        """Descencripta en mensaje usando el cifrado de Vigenere
+
+        Returns:
+            list
+        """
         bloques_cifrados = []
         aux = ''
         for bloque in self.blocks:
             index = 0
-            for caracter in bloque:
-                car = (ord(caracter) - 65) - (ord(self._key[index]) - 65)
+            for character in bloque:
+                car = (self.find_index(character) - self.find_index(self._key[index]))
                 if car >= 26 or car < 0:
                     car = car % 26
-                aux += chr(car + 65)
+                aux += self._alphabet[car]
                 index += 1
             bloques_cifrados.append(aux)
             aux = ''
@@ -58,6 +103,8 @@ class VigenereCipher:
 
 
 class MainWindow(QMainWindow):
+    """Clase encargada de generar GUI y recibir los datos del usuario
+    """
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Dialogos en PySide')
@@ -92,10 +139,12 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Cifrador Vigenere')
 
     def vigenere_cipher(self):
+        """Encargado de recopilar la infromación necesaria para ejecutar el encriptado con ayuda de CypherVigenere"""
         blocks, encrypted_blocks = VigenereCipher(self.plain_text.toPlainText(), self.key.toPlainText()).encrypt()
         self.output_label.setText("  ".join(blocks) + '\n' + "  ".join(encrypted_blocks))
 
     def vigenere_decryption(self):
+        """Encargado de recopilar la infromación necesaria para ejecutar el descencriptado con ayuda de CypherVigenere"""
         blocks, encrypted_blocks = VigenereCipher(self.plain_text.toPlainText(), self.key.toPlainText()).decrypt()
         self.output_label.setText("  ".join(blocks) + '\n' + "  ".join(encrypted_blocks))
 
