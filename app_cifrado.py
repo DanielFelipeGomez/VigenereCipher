@@ -20,6 +20,9 @@ class VigenereCipher:
             plain_text (str) : [Texto de entrada que se desea cifrar]
             key (str) : [Clave del cifrado]
         """
+        self._alphabet_mody = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+                          'J', 'K', 'L', 'M', 'N', 'Ñ', 'O', 'P', 'Q', 'R',
+                          'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
         self._alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
                           'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
                           'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
@@ -40,6 +43,22 @@ class VigenereCipher:
         """
         index = 0
         for c in self._alphabet:
+            if c == character:
+                return index
+            index += 1
+        return -1
+
+    def find_index_mody(self, character):
+        """Retorna el indice donde se encuentra un caracter en el alfabeto
+
+        Args:
+            character (str)
+
+        Returns:
+            int
+        """
+        index = 0
+        for c in self._alphabet_mody:
             if c == character:
                 return index
             index += 1
@@ -71,8 +90,8 @@ class VigenereCipher:
             index = 0
             for character in block:
                 car = (self.find_index(character) + self.find_index(self._key[index]))
-                if car >= 26:
-                    car = car % 26
+                if car >= 27:
+                    car = car % 27
                 aux += self._alphabet[car]
                 index += 1
             bloques_cifrados.append(aux)
@@ -93,8 +112,31 @@ class VigenereCipher:
             for character in bloque:
                 car = (self.find_index(character) - self.find_index(self._key[index]))
                 if car >= 26 or car < 0:
+                    car += 26
                     car = car % 26
                 aux += self._alphabet[car]
+                index += 1
+            bloques_cifrados.append(aux)
+            aux = ''
+        self._cipher_text = "".join(bloques_cifrados)
+        return [self.blocks, bloques_cifrados]
+
+    def decrypt_mody(self):
+        """Descencripta en mensaje usando el cifrado de Vigenere
+
+        Returns:
+            list
+        """
+        bloques_cifrados = []
+        aux = ''
+        for bloque in self.blocks:
+            index = 0
+            for character in bloque:
+                car = (self.find_index_mody(character) - self.find_index_mody(self._key[index]))
+                if car >= 27 or car < 0:
+                    car += 27
+                    car = car % 27
+                aux += self._alphabet_mody[car]
                 index += 1
             bloques_cifrados.append(aux)
             aux = ''
@@ -115,7 +157,7 @@ class MainWindow(QMainWindow):
         self.key.move(20, 40)
         self.key.resize(260, 40)
         # creamos linea para el mensaje
-        plain_text_label = QLabel("Intriduce la clave", self)
+        plain_text_label = QLabel("Intriduce el mensaje", self)
         plain_text_label.move(110, 80)
         self.plain_text = QPlainTextEdit(self)
         self.plain_text.move(20, 110)
@@ -129,6 +171,10 @@ class MainWindow(QMainWindow):
         decrypt_button.move(160, 160)
         decrypt_button.resize(120, 30)
         decrypt_button.clicked.connect(self.vigenere_decryption)
+        decrypt_button = QPushButton('Mody en Vigenere', self)
+        decrypt_button.move(160, 280)
+        decrypt_button.resize(120, 30)
+        decrypt_button.clicked.connect(self.vigenere_decryption_mody)
         # creamos etiqueta de mensaje de salida
         self.output_label = QLabel(self)
         self.output_label.move(30, 200)
@@ -146,6 +192,11 @@ class MainWindow(QMainWindow):
     def vigenere_decryption(self):
         """Encargado de recopilar la infromación necesaria para ejecutar el descencriptado con ayuda de CypherVigenere"""
         blocks, encrypted_blocks = VigenereCipher(self.plain_text.toPlainText(), self.key.toPlainText()).decrypt()
+        self.output_label.setText("  ".join(blocks) + '\n' + "  ".join(encrypted_blocks))
+
+    def vigenere_decryption_mody(self):
+        """Encargado de recopilar la infromación necesaria para ejecutar el descencriptado con ayuda de CypherVigenere"""
+        blocks, encrypted_blocks = VigenereCipher(self.plain_text.toPlainText(), self.key.toPlainText()).decrypt_mody()
         self.output_label.setText("  ".join(blocks) + '\n' + "  ".join(encrypted_blocks))
 
 
